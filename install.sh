@@ -62,7 +62,7 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/mas
 
 # Configure Git
 
-# Install NodeJS
+# Install NodeJS via NVM
 
 # Install iTerm2
 brew cask install iterm2
@@ -73,3 +73,5 @@ brew cask install google-chrome
 # Install VS Code and Settings Sync
 brew cask install visual-studio-code
 code --install-extension shan.code-settings-sync
+
+# Add folders and shortcuts
