@@ -40,6 +40,8 @@ create_folder_if_not_there() {
 
 echo "Starting bootstrapping"
 
+# Recite the Xcode incantation
+
 # Check for Homebrew, install if we don't have it
 if test ! $(which brew); then
     echo "Installing homebrew..."
@@ -58,11 +60,16 @@ echo "Current shell:" $SHELL
 # Install Oh My Zsh
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 
+# Configure Git
+
+# Install NodeJS
+
 # Install iTerm2
 brew cask install iterm2
 
 # Install Chrome
 brew cask install google-chrome
 
-# Install VS Code
+# Install VS Code and Settings Sync
 brew cask install visual-studio-code
+code --install-extension shan.code-settings-sync
