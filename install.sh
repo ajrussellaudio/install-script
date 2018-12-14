@@ -78,8 +78,6 @@ if test ! $(which brew); then
 fi
 
 echo "Installing Zsh and Oh-My-Zsh..."
-brew install zsh zsh-completions
-
 PACKAGES=(
   zsh
   zsh-completions
@@ -115,6 +113,7 @@ FONTS=(
   font-source-code-pro
   font-source-code-pro-for-powerline
 )
+brew tap homebrew/cask-fonts
 brew cask install ${FONTS[@]}
 
 create_folder_if_not_there "$HOME/Documents/settings/iterm"
@@ -145,4 +144,4 @@ echo .DS_Store >> ~/.gitignore_global
 echo "Setting up TrackPad..."
 defaults write -g com.apple.swipescrolldirection -bool NO
 
-echo "Done! Enjoy your new Mac!"
+echo "Done! Now start iTerm..."
