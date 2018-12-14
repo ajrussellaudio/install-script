@@ -27,32 +27,65 @@ append_to_zshrc() {
 create_folder_if_not_there() {
   local folder="$1"
 
-  if [ -d "$folder" ]; then
-    if ! [ -r "$folder" ]; then
-      sudo chown -R "$LOGNAME:admin" "$folder"
-    fi
-  else
-    sudo mkdir -p "$folder"
-    sudo chflags norestricted "$folder"
-    sudo chown -R "$LOGNAME:admin" "$folder"
+  if ! [ -d "$folder" ]; then
+    mkdir -p "$folder"
   fi
 }
+
+create_folder_and_shortcut() {
+  local folder="$1" shortcut="$2"
+
+  create_folder_if_not_there "$folder"
+  append_to_zshrc "alias $shortcut=$folder"
+}
+
+##############################################
 
 echo "Starting bootstrapping"
 
 # Recite the Xcode incantation
 
-# Check for Homebrew, install if we don't have it
-if test ! $(which brew); then
-    echo "Installing homebrew..."
-    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+xcode-select -p 2>/dev/null
+return_code=$?
+
+while [ $return_code -eq 2 ]
+do
+  fancy_echo "\033[1;31mApple's Xcode Developer Tools are not installed!\033[0m"
+  fancy_echo "\033[1;31mPlease install them through the dialog box before continuing with running this installation script.\033[0m"
+  fancy_echo "Many of the tools used in this script will not work without the Xcode developer tools"
+  fancy_echo "Opening 'Install Command Line Developer Tools'"
+  xcode-select --install 1>/dev/null
+  fancy_echo "Press enter to try again once Xcode developer tools are installed"
+  read input
+  xcode-select -p
+  return_code=$?
+done
+
+if [ ! -d "$HOME/.bin/" ]; then
+  mkdir "$HOME/.bin"
 fi
 
-# Update homebrew recipes
-brew update
+if [ ! -f "$HOME/.zshrc" ]; then
+  touch "$HOME/.zshrc"
+fi
 
-# Install Zsh
+append_to_zshrc 'export PATH="$HOME/.bin:$PATH"'
+
+# Check for Homebrew, install if we don't have it
+if test ! $(which brew); then
+  echo "Installing homebrew..."
+  ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+fi
+
+echo "Installing Zsh and Oh-My-Zsh..."
 brew install zsh zsh-completions
+
+PACKAGES=(
+  zsh
+  zsh-completions
+  python3
+)
+brew install ${PACKAGES[@]}
 chsh -s $(which zsh)
 
 echo "Current shell:" $SHELL
@@ -60,18 +93,47 @@ echo "Current shell:" $SHELL
 # Install Oh My Zsh
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 
-# Configure Git
-
 # Install NodeJS via NVM
+sh -c "$(curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh)"
+nvm use node
 
-# Install iTerm2
-brew cask install iterm2
+echo "Installing cask apps..."
+CASKS=(
+  iterm2
+  google-chrome
+  spotify
+  visual-studio-code
+)
+brew cask install ${CASKS[@]}
 
-# Install Chrome
-brew cask install google-chrome
+echo "Installing fonts..."
+FONTS=(
+  font-source-code-pro
+  font-source-code-pro-for-powerline
+)
+brew install ${FONTS[@]}
 
-# Install VS Code and Settings Sync
-brew cask install visual-studio-code
+create_folder_if_not_there "$HOME/Documents/settings/iterm"
+(cd "$HOME/Documents/settings/iterm" && curl -O https://gist.githubusercontent.com/ajrussellaudio/f86857214c21199d703b822cb2e91d53/raw/f68fe163e7ac1b55c60d98ea1fc75eb472792bfd/com.googlecode.iterm2.plist)
+
+# Install VS Code extensions
 code --install-extension shan.code-settings-sync
 
-# Add folders and shortcuts
+# Install Spaceship prompt
+npm install -g spaceship-prompt
+
+echo "Creating folders and shortcuts..."
+create_folder_and_shortcut "$HOME/Documents/working" "work"
+create_folder_and_shortcut "$HOME/Documents/learning" "learn"
+create_folder_and_shortcut "$HOME/Documents/playground" "play"
+create_folder_and_shortcut "$HOME/Documents/open-source" "oss"
+
+append_to_zshrc 'alias nuke="rm -rf node_modules && rm package-lock.json && npm install"'
+append_to_zshrc 'alias cra="npx create-react-app ."'
+append_to_zshrc 'alias co="code . -r"'
+
+# Configure Git
+npx git-setup
+
+echo "Globally ignoring .DS_Store files..."
+echo .DS_Store >> ~/.gitignore_global
