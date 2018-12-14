@@ -99,6 +99,7 @@ nvm use node
 
 echo "Installing cask apps..."
 CASKS=(
+  avast-security
   iterm2
   google-chrome
   spotify
