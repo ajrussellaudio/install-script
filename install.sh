@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 # Adapted from:
 # https://gist.github.com/codeinthehole/26b37efa67041e1307db
@@ -50,12 +50,12 @@ return_code=$?
 
 while [ $return_code -eq 2 ]
 do
-  fancy_echo "\033[1;31mApple's Xcode Developer Tools are not installed!\033[0m"
-  fancy_echo "\033[1;31mPlease install them through the dialog box before continuing with running this installation script.\033[0m"
-  fancy_echo "Many of the tools used in this script will not work without the Xcode developer tools"
-  fancy_echo "Opening 'Install Command Line Developer Tools'"
+  echo "\033[1;31mApple's Xcode Developer Tools are not installed!\033[0m"
+  echo "\033[1;31mPlease install them through the dialog box before continuing with running this installation script.\033[0m"
+  echo "Many of the tools used in this script will not work without the Xcode developer tools"
+  echo "Opening 'Install Command Line Developer Tools'"
   xcode-select --install 1>/dev/null
-  fancy_echo "Press enter to try again once Xcode developer tools are installed"
+  echo "Press enter to try again once Xcode developer tools are installed"
   read input
   xcode-select -p
   return_code=$?
@@ -86,7 +86,7 @@ PACKAGES=(
   python3
 )
 brew install ${PACKAGES[@]}
-chsh -s $(which zsh)
+chsh -s /bin/zsh
 
 echo "Current shell:" $SHELL
 
@@ -95,7 +95,10 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/mas
 
 # Install NodeJS via NVM
 sh -c "$(curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh)"
-nvm use node
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+nvm install node
 
 echo "Installing cask apps..."
 CASKS=(
@@ -112,7 +115,7 @@ FONTS=(
   font-source-code-pro
   font-source-code-pro-for-powerline
 )
-brew install ${FONTS[@]}
+brew cask install ${FONTS[@]}
 
 create_folder_if_not_there "$HOME/Documents/settings/iterm"
 (cd "$HOME/Documents/settings/iterm" && curl -O https://gist.githubusercontent.com/ajrussellaudio/f86857214c21199d703b822cb2e91d53/raw/f68fe163e7ac1b55c60d98ea1fc75eb472792bfd/com.googlecode.iterm2.plist)
@@ -138,3 +141,8 @@ npx git-setup
 
 echo "Globally ignoring .DS_Store files..."
 echo .DS_Store >> ~/.gitignore_global
+
+echo "Setting up TrackPad..."
+defaults write -g com.apple.swipescrolldirection -bool NO
+
+echo "Done! Enjoy your new Mac!"
