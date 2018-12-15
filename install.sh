@@ -50,7 +50,7 @@ osascript -e 'tell application "System Preferences" to quit'
 # Ask for the administrator password upfront
 sudo -v
 
-# Keep-alive: update existing `sudo` time stamp until `.macos` has finished
+# Keep-alive: update existing `sudo` time stamp until the script has finished
 while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 
 echo "Starting bootstrapping"
@@ -63,9 +63,7 @@ return_code=$?
 while [ $return_code -eq 2 ]
 do
   echo "\033[1;31mApple's Xcode Developer Tools are not installed!\033[0m"
-  echo "\033[1;31mPlease install them through the dialog box before continuing with running this installation script.\033[0m"
-  echo "Many of the tools used in this script will not work without the Xcode developer tools"
-  echo "Opening 'Install Command Line Developer Tools'"
+  echo "\033[1;31mRecite the Xcode incantation before continuing with running this installation script.\033[0m"
   xcode-select --install 1>/dev/null
   echo "Press enter to try again once Xcode developer tools are installed"
   read input
@@ -89,16 +87,16 @@ if test ! $(which brew); then
   ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 fi
 
-echo "Installing Zsh and Oh-My-Zsh..."
+echo "Installing Python 3, Zsh and Oh-My-Zsh..."
 PACKAGES=(
+  python3
   zsh
   zsh-completions
-  python3
 )
 brew install ${PACKAGES[@]}
 
-# Install Oh My Zsh in subshell
-(sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)")
+# Install Oh My Zsh
+curl -L "https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh" | sh
 
 # Install NodeJS via NVM
 sh -c "$(curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh)"
@@ -153,20 +151,6 @@ echo "Globally ignoring .DS_Store files..."
 echo .DS_Store >> ~/.gitignore_global
 
 echo "Setting up macOS preferences..."
-# enable tap to click for this user and for the login screen
-defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true
-defaults -currentHost write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
-defaults write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
-
-# Disable “natural” (Lion-style) scrolling
-defaults write NSGlobalDomain com.apple.swipescrolldirection -bool false
-
-# Use scroll gesture with the Ctrl (^) modifier key to zoom
-defaults write com.apple.universalaccess closeViewScrollWheelToggle -bool true
-defaults write com.apple.universalaccess HIDScrollZoomModifierMask -int 262144
-# Follow the keyboard focus while zoomed in
-defaults write com.apple.universalaccess closeViewZoomFollowsFocus -bool true
-
 # Stop iTunes from responding to the keyboard media keys
 launchctl unload -w /System/Library/LaunchAgents/com.apple.rcd.plist 2> /dev/null
 
@@ -185,12 +169,6 @@ setScreenshotLocation "${HOME}/Desktop/Screenshots"
 # Avoid creating .DS_Store files on network or USB volumes
 defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
 defaults write com.apple.desktopservices DSDontWriteUSBStores -bool true
-
-# Show the ~/Library folder
-chflags nohidden ~/Library
-
-# Show the /Volumes folder
-sudo chflags nohidden /Volumes
 
 # Disable Dashboard
 defaults write com.apple.dashboard mcx-disabled -bool true
@@ -211,4 +189,7 @@ killall "Google Chrome" &> /dev/null
 # TODO:
 # - Set three-finger drag
 
-echo "Done! Now start iTerm..."
+echo "Done! Here's all the stuff this script can't do yet:"
+echo "- Set three-finger drag"
+echo "- Set scroll direction to unnatural"
+
