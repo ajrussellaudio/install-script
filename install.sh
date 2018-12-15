@@ -4,6 +4,8 @@
 # https://gist.github.com/codeinthehole/26b37efa67041e1307db
 # and
 # https://github.com/codeclan/laptop/blob/master/mac
+# and
+# https://github.com/mathiasbynens/dotfiles/blob/master/.macos
 
 append_to_zshrc() {
   local text="$1" zshrc
@@ -114,6 +116,8 @@ brew tap homebrew/cask-fonts
 brew cask install ${FONTS[@]}
 
 create_folder_if_not_there "$HOME/Documents/settings/iterm"
+
+# Download iTerm settings
 (cd "$HOME/Documents/settings/iterm" && curl -O https://gist.githubusercontent.com/ajrussellaudio/f86857214c21199d703b822cb2e91d53/raw/f68fe163e7ac1b55c60d98ea1fc75eb472792bfd/com.googlecode.iterm2.plist)
 
 # Install VS Code extensions
@@ -138,7 +142,60 @@ npx git-setup
 echo "Globally ignoring .DS_Store files..."
 echo .DS_Store >> ~/.gitignore_global
 
-echo "Setting up TrackPad..."
-defaults write -g com.apple.swipescrolldirection -bool NO
+echo "Setting up macOS preferences..."
+# enable tap to click for this user and for the login screen
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true
+defaults -currentHost write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
+defaults write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
+
+# Disable “natural” (Lion-style) scrolling
+defaults write NSGlobalDomain com.apple.swipescrolldirection -bool false
+
+# Use scroll gesture with the Ctrl (^) modifier key to zoom
+defaults write com.apple.universalaccess closeViewScrollWheelToggle -bool true
+defaults write com.apple.universalaccess HIDScrollZoomModifierMask -int 262144
+# Follow the keyboard focus while zoomed in
+defaults write com.apple.universalaccess closeViewZoomFollowsFocus -bool true
+
+# Stop iTunes from responding to the keyboard media keys
+launchctl unload -w /System/Library/LaunchAgents/com.apple.rcd.plist 2> /dev/null
+
+# Require password immediately after sleep or screen saver begins
+defaults write com.apple.screensaver askForPassword -int 1
+defaults write com.apple.screensaver askForPasswordDelay -int 0
+
+# Save screenshots to the desktop
+function setScreenshotLocation() {
+  local folder=$1
+  mkdir "$folder"
+  defaults write com.apple.screencapture location -string "$folder"
+}
+setScreenshotLocation "${HOME}/Desktop/Screenshots"
+
+# Avoid creating .DS_Store files on network or USB volumes
+defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
+defaults write com.apple.desktopservices DSDontWriteUSBStores -bool true
+
+# Show the ~/Library folder
+chflags nohidden ~/Library
+
+# Show the /Volumes folder
+sudo chflags nohidden /Volumes
+
+# Disable Dashboard
+defaults write com.apple.dashboard mcx-disabled -bool true
+
+# Don’t show Dashboard as a Space
+defaults write com.apple.dock dashboard-in-overlay -bool true
+
+# Don’t automatically rearrange Spaces based on most recent use
+defaults write com.apple.dock mru-spaces -bool false
+
+# Prevent Photos from opening automatically when devices are plugged in
+defaults -currentHost write com.apple.ImageCapture disableHotPlug -bool true
+
+# Disable the sensitive Chrome backswipe on trackpad
+defaults write com.google.Chrome AppleEnableSwipeNavigateWithScrolls -bool false
+killall "Google Chrome" &> /dev/null
 
 echo "Done! Now start iTerm..."
