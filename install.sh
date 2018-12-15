@@ -198,4 +198,7 @@ defaults -currentHost write com.apple.ImageCapture disableHotPlug -bool true
 defaults write com.google.Chrome AppleEnableSwipeNavigateWithScrolls -bool false
 killall "Google Chrome" &> /dev/null
 
+# TODO:
+# - Set three-finger drag
+
 echo "Done! Now start iTerm..."
