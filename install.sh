@@ -87,9 +87,9 @@ if test ! $(which brew); then
   ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 fi
 
-echo "Installing Python 3, Zsh and Oh-My-Zsh..."
+echo "Installing SVN,  Zsh and Oh-My-Zsh..."
 PACKAGES=(
-  python3
+  svn
   zsh
   zsh-completions
 )
@@ -107,13 +107,13 @@ nvm install node
 
 echo "Installing cask apps..."
 CASKS=(
-  avast-security
+  lastpass
   iterm2
   google-chrome
   spotify
   visual-studio-code
 )
-brew cask install ${CASKS[@]}
+brew install --cask ${CASKS[@]}
 
 echo "Installing fonts..."
 FONTS=(
@@ -121,15 +121,9 @@ FONTS=(
   font-source-code-pro-for-powerline
 )
 brew tap homebrew/cask-fonts
-brew cask install ${FONTS[@]}
+brew install --cask ${FONTS[@]}
 
 create_folder_if_not_there "$HOME/Documents/settings/iterm"
-
-# Download iTerm settings
-(cd "$HOME/Documents/settings/iterm" && curl -O https://gist.githubusercontent.com/ajrussellaudio/f86857214c21199d703b822cb2e91d53/raw/f68fe163e7ac1b55c60d98ea1fc75eb472792bfd/com.googlecode.iterm2.plist)
-
-# Install VS Code extensions
-code --install-extension shan.code-settings-sync
 
 # Install Spaceship prompt
 npm install -g spaceship-prompt
@@ -140,12 +134,7 @@ create_folder_and_shortcut "$HOME/Documents/learning" "learn"
 create_folder_and_shortcut "$HOME/Documents/playground" "play"
 create_folder_and_shortcut "$HOME/Documents/open-source" "oss"
 
-append_to_zshrc 'alias nuke="rm -rf node_modules && rm package-lock.json && npm install"'
-append_to_zshrc 'alias cra="npx create-react-app ."'
 append_to_zshrc 'alias co="code . -r"'
-
-# Configure Git
-npx git-setup
 
 echo "Globally ignoring .DS_Store files..."
 echo .DS_Store >> ~/.gitignore_global
@@ -186,10 +175,21 @@ defaults -currentHost write com.apple.ImageCapture disableHotPlug -bool true
 defaults write com.google.Chrome AppleEnableSwipeNavigateWithScrolls -bool false
 killall "Google Chrome" &> /dev/null
 
+# Vim syntax highlighting
+echo "syntax on" >> ~/.vimrc
+
+echo "Configuring git:"
+read -p "- Your full name: " fullname
+git config --global user.name fullname
+read -p "- Your email address: " email
+git config --global user.email email
+
 # TODO:
 # - Set three-finger drag
 
 echo "Done! Here's all the stuff this script can't do yet:"
 echo "- Set three-finger drag"
 echo "- Set scroll direction to unnatural"
-
+echo ""
+echo "Do this for your GitHub key:"
+echo "ssh-keygen -t rsa -b 2048 -C $(email) && cat ~/.ssh/id_rsa.pub | pbcopy"
